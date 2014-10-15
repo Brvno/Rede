@@ -1,33 +1,48 @@
 #include <bits/stdc++.h>
 #include "communication.h"
+#include <pthread.h>
 
 using namespace std;
 
 #define PORT 50000
+#define IP "localhost"
 int fdSocket;
-char message[5];
+char message[1];
 bool janela;
 
 void receiveFrame(){
 
     do {
         receiveMessage(fdSocket, message, sizeof(message));
-        cout << "Recebeu: " << message << endl;
+        if(rand() % 20 > 2)
+            cout << "Recebeu: " << (int)message[0] << endl;
+        else {
+            cout << "falhou" << endl;
+        }
         sleep(1);
         sendMessage(fdSocket, message, sizeof(message));
-    } while(message[2] != '#');
+    } while(message[0] != '#');
 
     cout << " -------- Acabou Janela --------" << endl;
     sleep(1);
 }
 
+void *confirmFrame(void * i){
+    receiveMessage(fdSocket, message, sizeof(message));
+}
+
 void sendFrame(){
-    do{
+    pthread_t thread;
+    int a;
+    pthread_create(&thread, NULL, &confirmFrame, (void *)a);
+    for(int i = 1; i < 99; i++){
+        message[0] = i;
+        if(i == 99)
+            message[0] = '#';
         sendMessage(fdSocket, message, sizeof(message));
-        cout << "Enviou: " << message << endl;
+        cout << "Enviou: " << (int)message[0] << endl;
         sleep(1);
-        receiveMessage(fdSocket, message, sizeof(message));
-    } while(message[2] != '#');
+    }
 
     cout << " -------- Acabou Janela --------" << endl;
 }
@@ -52,7 +67,7 @@ int main()
         sendFrame();
     }
     else{
-        fdSocket=tryConnection("localhost", PORT, 0);
+        fdSocket=tryConnection(IP, PORT, 0);
         receiveFrame();
     }
 
@@ -60,4 +75,3 @@ int main()
     closeConnection(mainSocket);
     return 0;
 }
-
