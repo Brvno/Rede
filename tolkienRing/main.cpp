@@ -4,10 +4,34 @@
 
 using namespace std;
 
+int mainSocket, fdSocketAcc, fdSocketTry;
+
+void conectarServer(){
+
+    //Abrindo a conexao para maquina anterior
+    int portal;
+    cout << "Qual portal desejas abrir? ";
+    cin >> portal;
+    mainSocket = openConnection(portal, 0);
+    fdSocketAcc = acceptConnection(mainSocket, sockLen);
+
+}
+
+void conectarClient(){
+    //Ip da maquina que sera conectado
+    cout << "IP do alvo: " << endl;
+    char ipTarget[20];
+    cin >> ipTarget;
+    cout << "Porta: " << endl;
+    int portal;
+    cin >> portal;
+    fdSocketTry = tryConnection(ipTarget, portal, 0);
+}
+
 #define PORT 50000
 int main()
 {
-    int mainSocket, fdSocketAcc, fdSocketTry;
+
     sockaddr_in sockAddr;
     char message[20] = "One Ring";
     socklen_t sockLen;
@@ -22,33 +46,15 @@ int main()
         portador = true;
 
     bool temp = false;
-    for(int i = 0; i < 2; i++){
-        if(i == 0){
-            cout << "[0]Server" << endl << "[1]Client" << endl;
-            cin >> temp;
-        }
-        else{
-            if(!temp){
-                //Abrindo a conexao para maquina anterior
-                int portal;
-                cout << "Qual portal desejas abrir? ";
-                cin >> portal;
-                mainSocket = openConnection(portal, 0);
-                fdSocketAcc = acceptConnection(mainSocket, sockLen);
-                temp = true;
-            }
-            else{
-                //Ip da maquina que sera conectado
-                cout << "IP do alvo: " << endl;
-                char ipTarget[20];
-                cin >> ipTarget;
-                cout << "Porta: " << endl;
-                int portal;
-                cin >> portal;
-                fdSocketTry = tryConnection(ipTarget, portal, 0);
-                temp = false;
-            }
-        }
+    cout << "[0]Server" << endl << "[1]Client" << endl;
+    cin >> temp;
+    if(temp){
+        conectarClient();
+        conectarServer();
+    }
+    else{
+        conectarServer();
+        conectarClient();
     }
 
     //Loop que ficara passando o One Ring
