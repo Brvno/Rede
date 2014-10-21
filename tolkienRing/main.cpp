@@ -5,7 +5,7 @@
 using namespace std;
 
 int mainSocket, fdSocketAcc, fdSocketTry;
-
+socklen_t sockLen;
 void conectarServer(){
 
     //Abrindo a conexao para maquina anterior
@@ -34,7 +34,7 @@ int main()
 
     sockaddr_in sockAddr;
     char message[20] = "One Ring";
-    socklen_t sockLen;
+
 
     char r;
     bool portador = false;
@@ -70,8 +70,7 @@ int main()
         }
         else{
             receiveMessage(fdSocketAcc, message, sizeof(message));
-            if(message == "One Ring")
-                portador = true;
+            portador = true;
         }
     }
 }
