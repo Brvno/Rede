@@ -42,22 +42,29 @@ void receiveFrame(){
 //Thread para receber message
 void *th_rcvMsg(void *a){
     receiveMessage(fdSocket, message, sizeof(message));
+    cout << "Confirmado: " << (int)message[0] << endl;
     confirmacao[(int)message[0]]=true;
+    sleep(1);
     pthread_exit(NULL);
 }
 
 //Confirmacao de Frame
 void* confirmFrame(void* x){
     int t = 0;
-    int y =*((int*)x);
+    int y = (int)x;
    //char *m = (char*)i;
     //int cogumelo = inicio;
+    pthread_t th;
     do {
-        t++;
-        cout << "                   Contador Tempo: " << t << endl;
+        pthread_create(&th, NULL, &th_rcvMsg, NULL);
+        //th_rcvMsg(NULL);
+        //t++;
+        //cout << "                   Contador Tempo: " << t << endl;
         sleep(1);
 
     } while( t < TIME_OUT|| !confirmacao[y]);
+    pthread_join(th,NULL);
+
     if(confirmacao[y])
         cout<<"confirmado "<<x;
     else
@@ -86,8 +93,6 @@ void sendFrame(){
     for(int i = 1; i < intervalo-janela; i++){
 
      //  pthread_create(&thread, NULL, &confirmFrame, msgs[i]);
-        pthread_t th;
-        pthread_create(&th, NULL, &th_rcvMsg, NULL);
         //Envia quadros da janela atual
         for(int j = i; j < janela+i; j++){
             if(!confirmacao[j])
@@ -97,7 +102,9 @@ void sendFrame(){
                 cout << "Enviou: " << (int)msgs[j][0] << endl;
                 sleep(1);
             }
+            cout << j << "--" << endl;
         }
+        cout << "chegou aqiuo?" << endl;
         for(int j = i; j < janela+i; j++)
         {
             pthread_join(thread[j],NULL);
@@ -126,12 +133,14 @@ void sendFrame(){
 
 int main(){
     int mainSocket;
-    struct sockaddr_in socketAddr;
     socklen_t sockLen;
 
     bool server;
     cout << "Server(1) | Client(0): ";
     cin >> server;
+
+    for(int i = 0; i < 113; i++)
+        confirmacao[i] = false;
 
     if(server){
         mainSocket = openConnection(PORT, 0);
