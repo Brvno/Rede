@@ -52,9 +52,8 @@ void *th_rcvMsg(void *a){
 void* confirmFrame(void* x){
     int t = 0;
     int y = (int)x;
-   //char *m = (char*)i;
-    //int cogumelo = inicio;
     pthread_t th;
+
     do {
         pthread_create(&th, NULL, &th_rcvMsg, NULL);
         //th_rcvMsg(NULL);
@@ -62,8 +61,8 @@ void* confirmFrame(void* x){
         //cout << "                   Contador Tempo: " << t << endl;
         sleep(1);
 
-    } while( t < TIME_OUT|| !confirmacao[y]);
-    pthread_join(th,NULL);
+    } while( t < TIME_OUT || !confirmacao[y]);
+    //pthread_join(th, NULL);
 
     if(confirmacao[y])
         cout<<"confirmado "<<x;
@@ -97,7 +96,7 @@ void sendFrame(){
         for(int j = i; j < janela+i; j++){
             if(!confirmacao[j])
             {
-                pthread_create(&thread[j], NULL, &confirmFrame, msgs[j]);
+                pthread_create(&thread[j], NULL, &confirmFrame, (void*)msgs[j][0]);
                 sendMessage(fdSocket, msgs[j], sizeof(msgs[j]));
                 cout << "Enviou: " << (int)msgs[j][0] << endl;
                 sleep(1);
@@ -105,16 +104,15 @@ void sendFrame(){
             cout << j << "--" << endl;
         }
         cout << "chegou aqiuo?" << endl;
-        for(int j = i; j < janela+i; j++)
-        {
-            pthread_join(thread[j],NULL);
-        }
+        //for(int j = i; j < janela+i; j++)
+            //pthread_join(thread[j],NULL);
+
         //pthread_join(thread,NULL);
         ///Aumento da janela
         erro?   janela-- :
                 janela++;
         erro = false;
-        cout<<"chegou aqui";
+        //cout<<"chegou aqui";
         for(int k=i;k<janela+k;k++)
         {
             if(confirmacao[k])
