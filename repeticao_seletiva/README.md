@@ -1,1 +1,1 @@
-Protocolo de Janela Deslizante utilizando Repeticao Seletiva
+Selective Repeat Sliding Window Protocol
