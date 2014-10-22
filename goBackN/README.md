@@ -1,6 +1,16 @@
+Protocolo de Janela Deslizante utilizando gobackN 
 
-Author: Bruno Ferreira
-		Eduardo Fischer
-	2014 - October, 17th
-	
-Protocolo de Janela Deslizante utilzando GoBackN.
+Eduardo Fischer 51790
+Bruno Ferreira  56172
+
+Instruções:
+
+Compilação-
+1) $ qtcreator goBackN.pro
+2) Build.
+3) Executar no qt ou
+   $./goBackN
+   
+Uso:
+1)Escolher server(1) ou cliente(0)
+     
