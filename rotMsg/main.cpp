@@ -12,39 +12,41 @@ using namespace std;
 tabela table;
 int mainSocket;
 vector<int> clientSocket; // Onde este ponto esta conectado
-int serverSocket[10];     // Onde me conecatam
+int serverSocket[10];     // Onde me conecta
 socklen_t sockLen;
 char messageTh[50];
 
 //Thread para receber mensagens
-void *serverResp(void*){
-    while(true){
-        for(int i = 0; i < 10; i++){
-            receiveMessage(serverSocket[i], messageTh, sizeof(messageTh));
-            /// Mensagem de ping
-            if(strcmp(messageTh, "Ping") ){
-                messageTh[0] = rand() % 150 + 1;
-                sendMessage(serverSocket[i], messageTh, sizeof(messageTh));
-            }
-            /// Mensagem de tabela
-            if(messageTh[0] == '#'){
-                //TODO: Atualizar tabela
-            }
-        }
+void *serverResp(void* s){
+    int socket = (int)s;
+
+    receiveMessage(socket, messageTh, sizeof(messageTh));
+    /// Mensagem de ping
+    if(strcmp(messageTh, "Ping") ){
+        messageTh[0] = rand() % 150 + 1;
+        sendMessage(socket, messageTh, sizeof(messageTh));
     }
+    tabela t;
+    recv(socket, (char*)&t, sizeof(tabela), 0);
+    /// Mensagem de tabela
+    if(messageTh[1] == '#'){
+        //TODO: Atualizar tabela
+    }
+
     pthread_exit(NULL);
 }
 
 //Conectar este ponto aos outros
 void iniciarCon(){
     for(int i = 0; i < 10; i++){
-        mainSocket = openConnection(PORT+i,1);
+        mainSocket = openConnection(5000+i,1);
         serverSocket[i] = acceptConnection(mainSocket, sockLen);
     }
     cout << "Quantas conexoes nesse ponto? ";
     int numCon;
     cin >> numCon;
 
+    pthread_t th[numCon];
 
     clientSocket.resize(numCon);
     vector<ponto> aux;
@@ -55,11 +57,10 @@ void iniciarCon(){
         aux.push_back(temp);
 
         clientSocket[i] = tryConnection(temp.ip, PORT, 0);
+        pthread_create(&th[i], NULL, &serverResp, (void*)clientSocket[i]);
     }
     table.id = 0;
     table.grafo.push_back(aux);
-    pthread_t th;
-    pthread_create(&th, NULL, &serverResp, NULL);
 
     cout << "Conexao estabelecida" << endl;
 }
@@ -85,12 +86,12 @@ void tunnel(){
 void enviarTabela(){
 /// FIXME: Como saber qual eh o indice deste pc? Ultimo(?)
 /// RESP: Quando for concatenar na nova tabela, manter a ultima linha.
-    char *msg = tabelaToString(table);
+    //char *msg = tabelaToString(table);
     vector<ponto> aux = table.grafo.back();
 
     for(unsigned int i = 0; i < aux.size(); i++){
         cout << "Enviou tabela para: " << aux[i].ip << endl;
-        sendMessage(clientSocket[i], msg, sizeof(msg));
+        send(clientSocket[i], (char*)&table, sizeof(table),0);
         sleep(1);
     }
 }
@@ -98,7 +99,6 @@ void enviarTabela(){
 int main(){
     iniciarCon();
     tunnel();
-    //pthread_join(th, NULL);
     enviarTabela();
     //djikstra();
     //enviarMsg(dst);
