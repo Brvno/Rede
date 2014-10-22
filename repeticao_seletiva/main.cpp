@@ -19,7 +19,7 @@ bool arrived[105];
 char msgs[1000][1];
 
 /// Client Side
-/// Recebe mensagem e a confirma. E simula falha
+/// Recebe mensagem e a confirma.
 void receiveFrame(){
 
     do {
@@ -37,7 +37,6 @@ void receiveFrame(){
     cout << " -------- Acabou Frames --------" << endl;
     sleep(1);
 }
-
 
 //Thread para receber message
 void *th_rcvMsg(void *a){
@@ -57,27 +56,39 @@ void* confirmFrame(void* x){
     do {
         pthread_create(&th, NULL, &th_rcvMsg, NULL);
         //th_rcvMsg(NULL);
-        //t++;
+        t++;
         //cout << "                   Contador Tempo: " << t << endl;
         sleep(1);
 
     } while( t < TIME_OUT || !confirmacao[y]);
     //pthread_join(th, NULL);
 
-    if(confirmacao[y])
-        cout<<"confirmado "<<x;
-    else
-    {
+    if(!confirmacao[y]) {
         erro=true;
-        cout<<"timeout"<<endl;
+        cout << "timeout" << endl;
     }
 
     pthread_exit(NULL);
 }
+///Thread para tratar o aumento da Janela
+void* threadJanela(void *a = NULL){
+
+    sleep(3);
+    if(rand() % 3 < 1  ){
+        ///Aumento da janela
+        erro?   janela -= 3 :
+                janela += 3;
+        erro = false;
+        //cout<<"chegou aqui";
+
+        if(janela < 1) janela = 1;
+        cout << " --- Novo Tamanho de janela: " << janela << endl;
+    }
+    pthread_exit(NULL);
+}
 
 /// Server Side
-/// Utilizado para
-
+/// Utilizado para enviar os frames
 void sendFrame(){
     pthread_t thread[105];
 
@@ -85,45 +96,35 @@ void sendFrame(){
     janela = 5;
     erro = false;
     cout << "Janela Inicial: " << janela << endl;
+
     for(int i = 1; i < intervalo; i++)
         msgs[i][0] = i;
 
     inicio = 1;
     for(int i = 1; i < intervalo-janela; i++){
-
-     //  pthread_create(&thread, NULL, &confirmFrame, msgs[i]);
-        //Envia quadros da janela atual
+        cout << " ### Janela: " << i << " - " << i + janela << endl;
+        //Envia quadros da janela atual e chama a thread de confirmacao
         for(int j = i; j < janela+i; j++){
-            if(!confirmacao[j])
-            {
+            if(!confirmacao[j]){
                 pthread_create(&thread[j], NULL, &confirmFrame, (void*)msgs[j][0]);
                 sendMessage(fdSocket, msgs[j], sizeof(msgs[j]));
                 cout << "Enviou: " << (int)msgs[j][0] << endl;
                 sleep(1);
             }
-            cout << j << "--" << endl;
         }
-        cout << "chegou aqiuo?" << endl;
-        //for(int j = i; j < janela+i; j++)
-            //pthread_join(thread[j],NULL);
 
-        //pthread_join(thread,NULL);
-        ///Aumento da janela
-        erro?   janela-- :
-                janela++;
-        erro = false;
-        //cout<<"chegou aqui";
-        for(int k=i;k<janela+k;k++)
-        {
+        for(int k = i; k < janela+k; k++){
             if(confirmacao[k])
                inicio++;
             else
                 break;
         }
-        if(janela < 1) janela = 1;
-        cout << "Nova janela: " << janela << endl;
+
         sleep(1);
-        i=inicio-1;
+        i = inicio-1;
+
+        pthread_t thJan;
+        pthread_create(&thJan, NULL, &threadJanela, NULL);
     }
 
     cout << " -------- Acabou Intervalo --------" << endl;
