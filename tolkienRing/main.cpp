@@ -63,7 +63,7 @@ int main()
         {
             cout << "Eu sou o Portador do Um Anel. Kneel before me!" << endl;
             sleep(2);
-            cin >> temp;
+        //    cin >> temp;
             sendMessage(fdSocketTry, message, sizeof(message));
             cout << "Sneaky little hobbitsses... \n They stole it from us! \n My Precious" << endl;
             portador = false;
