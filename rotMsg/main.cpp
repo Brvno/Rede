@@ -48,13 +48,13 @@ void iniciarCon(){
     clientSocket.resize(numCon);
     vector<ponto> aux;
     for(int i = 0; i < numCon; i++){
-        pthread_create(&th[i], NULL, &serverResp, (void*)clientSocket[i]);
         ponto temp;
         cout << "IP alvo: ";
         cin >> temp.ip;
         aux.push_back(temp);
 
         clientSocket[i] = tryConnection(temp.ip, PORT, 0);
+        pthread_create(&th[i], NULL, &serverResp, (void*)clientSocket[i]);
     }
     table.id = 0;
     table.grafo.push_back(aux);
