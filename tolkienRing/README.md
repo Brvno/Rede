@@ -6,10 +6,10 @@ Bruno Ferreira  56172
 Instruções:
 
 Compilação-
-1) $ qtcreator tolkienring.pro
+1) $ qtcreator tolkienRing.pro
 2) Build.
 3) Executar no qt ou
-   $./tolkienring
+   $./tolkienRing
    
 Uso:
 1)Escolher server para abri conexão ou escolher client se quiser conectar em um server
