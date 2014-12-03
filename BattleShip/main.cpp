@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        fdSocket = tryConnection("localhost", PORT, 0);
+        fdSocket = tryConnection((char*)argv[1], PORT, 0);
     }
 
     Campo mySide = new Campo(true);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         if(server){
             ///Atirar
             bool errou = false;
-            do{
+            do {
                 std::cout << "Posição do Tiro: " << std::endl;
                 std::cin >> cmd->x >> cmd->y;
                 cmd->code = 1;
@@ -75,6 +75,10 @@ int main(int argc, char *argv[])
                 }
                 else if(cmd->code == 4)
                     std::cout << "Jogada Invalida" << std::endl;
+
+                system("clear");
+                mySide.showCampo();
+                enemySide.showCampo();
             } while(!errou);
 
             //Receber tiro
@@ -90,29 +94,34 @@ int main(int argc, char *argv[])
                             cmd->code = mySide.rcvTiro(cmd->x,cmd->y);
                             std::cout << "Tiro Recebido em: [" << cmd->x << "," << cmd->y << "]" ;
                             if(cmd->code == 2){
-                                invalido = false;
+
                                 std::cout << "Hit\n";
+                                if(mySide.isGameOver())
+                                   cmd->code=5;
                             }
-                            else{
-                                invalido = true;
+                            else {
                                 std::cout << "Miss\n";
+                                invalido = true;
                             }
                         }
                         else
                             cmd->code = 4;
                         sendMessage(fdSocket, (char*)cmd, sizeof(mensagem));
-                        invalido = true;
+
                         break;
                     case 6:
                         std::cout << "WINNER!" << std::endl;
                         return 0;
                 }
+                system("clear");
+                mySide.showCampo();
+                enemySide.showCampo();
             } while(!invalido);
 
         }
         else {
             //Receber tiro
-            bool invalido = false;
+            bool invalido = true;
             do{
                 receiveMessage(fdSocket, msg, sizeof(mensagem));
                 mensagem *cmd = (mensagem*)malloc(sizeof(mensagem));
@@ -122,10 +131,12 @@ int main(int argc, char *argv[])
                     case 1:
                         if(cmd->x > 0 && cmd->x < 11 && cmd->y > 0 && cmd->y < 11){
                             cmd->code = mySide.rcvTiro(cmd->x,cmd->y);
-                            std::cout << "Tiro Recebido em: [" << cmd->x << "," << cmd->y << "]\n" ;
+                            std::cout << cmd->code << " Tiro Recebido em: [" << cmd->x << "," << cmd->y << "]\n" ;
                             if(cmd->code == 2){
                                 invalido = false;
                                 std::cout << "Hit\n";
+                                if(mySide.isGameOver())
+                                   cmd->code=5;
                             }
                             else{
                                 invalido = true;
@@ -134,13 +145,18 @@ int main(int argc, char *argv[])
                         }
                         else
                             cmd->code = 4;
+
                         sendMessage(fdSocket, (char*)cmd, sizeof(mensagem));
-                        invalido = true;
+
                         break;
                     case 6:
                         std::cout << "WINNER!" << std::endl;
                         return 0;
                 }
+                system("clear");
+                mySide.showCampo();
+                enemySide.showCampo();
+
             } while(!invalido);
             ///Atirar
             bool errou = false;
@@ -170,6 +186,11 @@ int main(int argc, char *argv[])
                 }
                 else if(cmd->code == 4)
                     std::cout << "Jogada Invalida" << std::endl;
+
+                system("clear");
+                mySide.showCampo();
+                enemySide.showCampo();
+
             } while(!errou);
 
         }

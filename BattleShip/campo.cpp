@@ -3,6 +3,7 @@
 Campo::Campo(bool dono)
 {
     this->dono = dono;
+
     this->hitCont = 0;
     this->desistencia = false;
     for(int i = 0; i < 11; i++)
@@ -18,11 +19,11 @@ void Campo::posicionar()
     int x,y;
     std::cout << "Posicionar Porta-Avioes [5u]" << std::endl;
     std::cin >> x >> y;
-    this->mat[x][y][0] = 'P';
-    this->mat[x+1][y][0] = 'P';
-    this->mat[x+2][y][0] = 'P';
-    this->mat[x+2][y+1][0] = 'P';
-    this->mat[x+2][y-1][0] = 'P';
+    this->mat[x][y][0] = (char)1;
+    this->mat[x+1][y][0] = (char)1;
+    this->mat[x+2][y][0] = (char)1;
+    this->mat[x+2][y+1][0] = (char)1;
+    this->mat[x+2][y-1][0] = (char)1;
     this->showCampo();
 
 
@@ -31,7 +32,7 @@ void Campo::posicionar()
     for(int i = 0; i < 3; i++){
         std::cout << "Posicionar Submarino " << i << " [1u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = 'S';
+        this->mat[x][y][0] = (char)1;
 
         this->showCampo();
     }
@@ -39,18 +40,18 @@ void Campo::posicionar()
     for(int i = 0; i < 2; i++){
         std::cout << "Posicionar Barco A " << i << " [2u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = 'A';
-        this->mat[x+1][y][0] = 'A';
+        this->mat[x][y][0] = (char)1;
+        this->mat[x+1][y][0] = (char)1;
 
         this->showCampo();
     }
 
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 2; i++){
         std::cout << "Posicionar Barco B " << i << " [3u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = 'B';
-        this->mat[x+1][y][0] = 'B';
-        this->mat[x+2][y][0] = 'B';
+        this->mat[x][y][0] = (char)1;
+        this->mat[x+1][y][0] = (char)1;
+        this->mat[x+2][y][0] = (char)1;
 
         this->showCampo();
     }
@@ -63,7 +64,7 @@ int Campo::rcvTiro(int x, int y)
     int msg;
     if(this->mat[x][y][0] != ' '){
         msg = 2;
-        if(!this->dono) this->hitCont++;
+        this->hitCont++;
     }
     else
         msg = 3;
@@ -76,6 +77,7 @@ void Campo::rcvTiro(int x, int y, bool hit)
 {
     if(hit){
         this->mat[x][y][1] = 'h';
+
     }
     else
         this->mat[x][y][1] = 'm';
@@ -83,11 +85,8 @@ void Campo::rcvTiro(int x, int y, bool hit)
 
 void Campo::showCampo()
 {
-    if(this->dono)
-        std::cout << "My ";
-    else
-        std::cout << "Enemy ";
-    std::cout << "Side" << std::endl;
+
+    std::cout << "--------------------" << std::endl;
 
     std::cout << " ";
     for(int i = 1; i < 11; i++)
@@ -109,9 +108,10 @@ void Campo::showCampo()
 
 bool Campo::isGameOver()
 {
+    std::cout<<"hitpoint="<<hitCont<<std::endl;
     if(this->desistencia)
         return true;
-    if(this->hitCont > 16)
+    if(this->hitCont > 17)
         return true;
     return false;
 }
