@@ -19,8 +19,9 @@ void Campo::posicionar()
     std::cin >> x >> y;
     this->mat[x][y][0] = 'P';
     this->mat[x+1][y][0] = 'P';
-    this->mat[x+1][y+1][0] = 'P';
-    this->mat[x+1][y-1][0] = 'P';
+    this->mat[x+2][y][0] = 'P';
+    this->mat[x+2][y+1][0] = 'P';
+    this->mat[x+2][y-1][0] = 'P';
 
     for(char i = 0; i < 3; i++){
         std::cout << "Posicionar Submarino " << i << " [1u]" << std::endl;
@@ -46,7 +47,7 @@ void Campo::posicionar()
     std::cout << "--- Todas unidades posicionadas ---" << std::endl;
 }
 
-char* Campo::atirar(int x, int y)
+char* Campo::rcvTiro(int x, int y)
 {
     char *msg;
     if(this->mat[x][y][0] != ' '){
@@ -58,6 +59,15 @@ char* Campo::atirar(int x, int y)
 
     this->mat[x][y][1] = 'H';
     return msg;
+}
+
+void Campo::rcvTiro(int x, int y, bool hit)
+{
+    if(hit){
+        this->mat[x][y][1] = 'H';
+    }
+    else
+        this->mat[x][y][1] = 'M';
 }
 
 void Campo::showCampo()
@@ -79,10 +89,24 @@ void Campo::showCampo()
 
     std::cout << "---------------------------------" << std::endl << std::endl;
 }
+void Campo::GetJogada()
+{
+    receive(message());
+}
 
 bool Campo::isGameOver()
 {
+    if(this->desistencia)
+        return true;
     if(this->hitCont == 17)
         return true;
     return false;
+}
+
+std::pair<int,int> Campo::atirar()
+{
+    std::cout << "Posição do Tiro: " << std::endl;
+    int x,y;
+    std::cin >> x >> y;
+    return std::make_pair(x,y);
 }
