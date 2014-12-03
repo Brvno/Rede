@@ -2,13 +2,12 @@
 #include "communication.h"
 #include "campo.h"
 
-#define PORT 5000
+#define PORT 50000
 
 int fdSocket, mainSocket;
 
 struct mensagem{
-    int code;
-    int x,y;
+    int code, x, y;
 };
 
 mensagem *rcvMsg(){
@@ -22,6 +21,8 @@ int main(int argc, char *argv[])
     /// Iniciar conexao
     bool server;
     socklen_t sockLen;
+    std::cout << "Servidor? [1/0]" << std::endl;
+    std::cin >> server;
     if(server){
         mainSocket = openConnection(PORT, 0);
         fdSocket = acceptConnection(mainSocket, sockLen);
@@ -38,28 +39,141 @@ int main(int argc, char *argv[])
 
 
     while(!mySide.isGameOver() && !enemySide.isGameOver()){
+        system("clear");
         mySide.showCampo();
         enemySide.showCampo();
-        std::pair<int,int> posTiro;
-        mensagem *cmd;
+
+        mensagem *cmd = (mensagem*)malloc(sizeof(mensagem));
+        char *msg = (char*)malloc(sizeof(mensagem));
+
         if(server){
             ///Atirar
-            posTiro = mySide.atirar();
-            cmd->x = posTiro.first;
-            cmd->y = posTiro.second;
-            cmd->code = 1;
+            bool errou = false;
+            do{
+                std::cout << "Posição do Tiro: " << std::endl;
+                std::cin >> cmd->x >> cmd->y;
+                cmd->code = 1;
+                msg = (char*)cmd;
 
-            sendMessage(fdSocket,(char*)cmd, sizeof(cmd));
-            cmd = rcvMsg();
-            if(cmd->code == 5 || cmd->code == 6){
-                std::cout << "WINNER!" << std::endl;
-                break;
-            }
+                sendMessage(fdSocket, msg, sizeof(mensagem));
 
+                //Confirmacao
+                receiveMessage(fdSocket, msg, sizeof(mensagem));
+                if(cmd->code == 5 || cmd->code == 6){
+                    std::cout << "WINNER!" << std::endl;
+                    break;
+                }
+                else if(cmd->code == 2){
+                    enemySide.rcvTiro(cmd->x, cmd->y,true);
+                    std::cout << "Acertou! \n";
+                    errou = false;
+                }
+                else if(cmd->code == 3){
+                    enemySide.rcvTiro(cmd->x, cmd->y, false);
+                    std::cout << "AGUA! \n";
+                    errou = true;
+                }
+                else if(cmd->code == 4)
+                    std::cout << "Jogada Invalida" << std::endl;
+            } while(!errou);
+
+            //Receber tiro
+            bool invalido = false;
+            do {
+                receiveMessage(fdSocket, msg, sizeof(mensagem));
+                mensagem *cmd = (mensagem*)malloc(sizeof(mensagem));
+                cmd = (mensagem*)msg;
+
+                switch(cmd->code){
+                    case 1:
+                        if(cmd->x > 0 && cmd->x < 11 && cmd->y > 0 && cmd->y < 11){
+                            cmd->code = mySide.rcvTiro(cmd->x,cmd->y);
+                            std::cout << "Tiro Recebido em: [" << cmd->x << "," << cmd->y << "]" ;
+                            if(cmd->code == 2){
+                                invalido = false;
+                                std::cout << "Hit\n";
+                            }
+                            else{
+                                invalido = true;
+                                std::cout << "Miss\n";
+                            }
+                        }
+                        else
+                            cmd->code = 4;
+                        sendMessage(fdSocket, (char*)cmd, sizeof(mensagem));
+                        invalido = true;
+                        break;
+                    case 6:
+                        std::cout << "WINNER!" << std::endl;
+                        return 0;
+                }
+            } while(!invalido);
+
+        }
+        else {
+            //Receber tiro
+            bool invalido = false;
+            do{
+                receiveMessage(fdSocket, msg, sizeof(mensagem));
+                mensagem *cmd = (mensagem*)malloc(sizeof(mensagem));
+                cmd = (mensagem*)msg;
+
+                switch(cmd->code){
+                    case 1:
+                        if(cmd->x > 0 && cmd->x < 11 && cmd->y > 0 && cmd->y < 11){
+                            cmd->code = mySide.rcvTiro(cmd->x,cmd->y);
+                            std::cout << "Tiro Recebido em: [" << cmd->x << "," << cmd->y << "]\n" ;
+                            if(cmd->code == 2){
+                                invalido = false;
+                                std::cout << "Hit\n";
+                            }
+                            else{
+                                invalido = true;
+                                std::cout << "Miss\n";
+                            }
+                        }
+                        else
+                            cmd->code = 4;
+                        sendMessage(fdSocket, (char*)cmd, sizeof(mensagem));
+                        invalido = true;
+                        break;
+                    case 6:
+                        std::cout << "WINNER!" << std::endl;
+                        return 0;
+                }
+            } while(!invalido);
+            ///Atirar
+            bool errou = false;
+            do {
+                std::cout << "Posição do Tiro: " << std::endl;
+                std::cin >> cmd->x >> cmd->y;
+                cmd->code = 1;
+                msg = (char*)cmd;
+
+                sendMessage(fdSocket, msg, sizeof(mensagem));
+
+                //Confirmacao
+                receiveMessage(fdSocket, msg, sizeof(mensagem));
+                if(cmd->code == 5 || cmd->code == 6){
+                    std::cout << "WINNER!" << std::endl;
+                    break;
+                }
+                else if(cmd->code == 2){
+                    enemySide.rcvTiro(cmd->x, cmd->y,true);
+                    std::cout << "Acertou! \n";
+                    errou = false;
+                }
+                else if(cmd->code == 3){
+                    enemySide.rcvTiro(cmd->x, cmd->y, false);
+                    std::cout << "AGUA! \n";
+                    errou = true;
+                }
+                else if(cmd->code == 4)
+                    std::cout << "Jogada Invalida" << std::endl;
+            } while(!errou);
 
         }
     }
-
 
     closeConnection(mainSocket);
     closeConnection(fdSocket);

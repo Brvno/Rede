@@ -4,6 +4,7 @@ Campo::Campo(bool dono)
 {
     this->dono = dono;
     this->hitCont = 0;
+    this->desistencia = false;
     for(int i = 0; i < 11; i++)
         for(int j = 0; j < 11; j++){
             this->mat[i][j][0] = ' ';
@@ -22,52 +23,62 @@ void Campo::posicionar()
     this->mat[x+2][y][0] = 'P';
     this->mat[x+2][y+1][0] = 'P';
     this->mat[x+2][y-1][0] = 'P';
+    this->showCampo();
 
-    for(char i = 0; i < 3; i++){
+
+    //4 4 1 1 1 2 1 3 1 8 1 9 2 1 2 2 3 2
+
+    for(int i = 0; i < 3; i++){
         std::cout << "Posicionar Submarino " << i << " [1u]" << std::endl;
         std::cin >> x >> y;
         this->mat[x][y][0] = 'S';
+
+        this->showCampo();
     }
 
-    for(char i = 0; i < 2; i++){
+    for(int i = 0; i < 2; i++){
         std::cout << "Posicionar Barco A " << i << " [2u]" << std::endl;
         std::cin >> x >> y;
         this->mat[x][y][0] = 'A';
         this->mat[x+1][y][0] = 'A';
+
+        this->showCampo();
     }
 
-    for(char i = 0; i < 3; i++){
+    for(int i = 0; i < 3; i++){
         std::cout << "Posicionar Barco B " << i << " [3u]" << std::endl;
         std::cin >> x >> y;
         this->mat[x][y][0] = 'B';
         this->mat[x+1][y][0] = 'B';
         this->mat[x+2][y][0] = 'B';
+
+        this->showCampo();
     }
 
     std::cout << "--- Todas unidades posicionadas ---" << std::endl;
 }
 
-char* Campo::rcvTiro(int x, int y)
+int Campo::rcvTiro(int x, int y)
 {
-    char *msg;
+    int msg;
     if(this->mat[x][y][0] != ' '){
-        msg = "Hit!";
+        msg = 2;
         if(!this->dono) this->hitCont++;
     }
     else
-        msg = "Miss";
+        msg = 3;
 
-    this->mat[x][y][1] = 'H';
+    this->mat[x][y][1] = 'h';
     return msg;
 }
 
 void Campo::rcvTiro(int x, int y, bool hit)
 {
     if(hit){
-        this->mat[x][y][1] = 'H';
+        this->mat[x][y][1] = 'h';
     }
     else
-        this->mat[x][y][1] = 'M';
+        this->mat[x][y][1] = 'm';
 }
 
 void Campo::showCampo()
@@ -78,7 +89,13 @@ void Campo::showCampo()
         std::cout << "Enemy ";
     std::cout << "Side" << std::endl;
 
+    std::cout << " ";
+    for(int i = 1; i < 11; i++)
+        std::cout << " " << i << " ";
+    std::cout << std::endl;
+
     for(int i = 1; i < 11; i++){
+        std::cout << i << " ";
         for(int j = 1; j < 11; j++){
             std::cout << this->mat[i][j][0];
             std::cout << this->mat[i][j][1];
@@ -89,18 +106,19 @@ void Campo::showCampo()
 
     std::cout << "---------------------------------" << std::endl << std::endl;
 }
-void Campo::GetJogada()
-{
-    receive(message());
-}
 
 bool Campo::isGameOver()
 {
     if(this->desistencia)
         return true;
-    if(this->hitCont == 17)
+    if(this->hitCont > 16)
         return true;
     return false;
+}
+
+void Campo::surrender()
+{
+    this->desistencia = true;
 }
 
 std::pair<int,int> Campo::atirar()
@@ -108,5 +126,6 @@ std::pair<int,int> Campo::atirar()
     std::cout << "Posição do Tiro: " << std::endl;
     int x,y;
     std::cin >> x >> y;
-    return std::make_pair(x,y);
+    std::pair<int,int> p(x,y);
+    return p;
 }

@@ -16,12 +16,16 @@ private:
     char mat[11][11][2];
     bool dono;
     int hitCont;
+    bool desistencia;
 public:
     Campo(bool);
     void posicionar();
-    char* atirar(int x, int y);
+    int rcvTiro(int x, int y);
+    void rcvTiro(int x, int y, bool hit);
     void showCampo();
     bool isGameOver();
+    void surrender();
+    std::pair<int,int> atirar();
 };
 
 #endif // CAMPO_H
