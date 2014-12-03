@@ -19,11 +19,11 @@ void Campo::posicionar()
     int x,y;
     std::cout << "Posicionar Porta-Avioes [5u]" << std::endl;
     std::cin >> x >> y;
-    this->mat[x][y][0] = (char)1;
-    this->mat[x+1][y][0] = (char)1;
-    this->mat[x+2][y][0] = (char)1;
-    this->mat[x+2][y+1][0] = (char)1;
-    this->mat[x+2][y-1][0] = (char)1;
+    this->mat[x][y][0] = '1';
+    this->mat[x+1][y][0] = '1';
+    this->mat[x+2][y][0] ='1';
+    this->mat[x+2][y+1][0] ='1';
+    this->mat[x+2][y-1][0] = '1';
     this->showCampo();
 
 
@@ -32,7 +32,7 @@ void Campo::posicionar()
     for(int i = 0; i < 3; i++){
         std::cout << "Posicionar Submarino " << i << " [1u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = (char)1;
+        this->mat[x][y][0] = '1';
 
         this->showCampo();
     }
@@ -40,8 +40,8 @@ void Campo::posicionar()
     for(int i = 0; i < 2; i++){
         std::cout << "Posicionar Barco A " << i << " [2u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = (char)1;
-        this->mat[x+1][y][0] = (char)1;
+        this->mat[x][y][0] = '1';
+        this->mat[x+1][y][0] ='1';
 
         this->showCampo();
     }
@@ -49,9 +49,9 @@ void Campo::posicionar()
     for(int i = 0; i < 2; i++){
         std::cout << "Posicionar Barco B " << i << " [3u]" << std::endl;
         std::cin >> x >> y;
-        this->mat[x][y][0] = (char)1;
-        this->mat[x+1][y][0] = (char)1;
-        this->mat[x+2][y][0] = (char)1;
+        this->mat[x][y][0] ='1';
+        this->mat[x+1][y][0] ='1';
+        this->mat[x+2][y][0] ='1';
 
         this->showCampo();
     }
@@ -69,18 +69,18 @@ int Campo::rcvTiro(int x, int y)
     else
         msg = 3;
 
-    this->mat[x][y][1] = 'h';
+    this->mat[x][y][0] = 'X';
     return msg;
 }
 
 void Campo::rcvTiro(int x, int y, bool hit)
 {
     if(hit){
-        this->mat[x][y][1] = 'h';
+        this->mat[x][y][1] = 'X';
 
     }
     else
-        this->mat[x][y][1] = 'm';
+        this->mat[x][y][1] = 'O';
 }
 
 void Campo::showCampo()
