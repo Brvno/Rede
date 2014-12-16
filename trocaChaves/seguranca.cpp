@@ -21,7 +21,7 @@ void descriptografa()
     while(msg[i]!='\0')
     {
         message[i]=message[i]-chave_ses;
-        i--;
+        i++;
     }
 }
 struct chaves
@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
     else
     {
         fdSocket = tryConnection((char*)argv[1], PORT, 0);
+        fdSocket2= tryConnection((char*)argv[2], PORT2, 0);
     }
     //se for server
     //recebe mensagem e envia a
@@ -110,18 +111,19 @@ int main(int argc, char *argv[])
         chave_ses=chave_ses-minhachave;
         cout<<"chave_ses="<<chave_ses<<endl;
         msg[0]='A';
-        fdSocket2 = tryConnection((char*)argv[2], PORT2, 0); //segundo argumento é o segundo ip
         sendMessage(fdSocket2,msg,sizeof(char)*100);
 		//comeca mensagens
 		while(strcmp(message, "tchau")){
 			receiveMessage(fdSocket2,message,100*sizeof(char)); //Recebe mensagem
+			printf("mensagem criptografada dele: %s\n", message);
 			descriptografa();
-			printf("Ele(a): %s\n", message);
+			printf("mensagem descriptografada dele: %s\n", message);
 			if(!strcmp(message, "tchau"))
 				break;
-			printf("Você: ");
 			gets(message);
+			printf("mensagem descriptografada minha: %s\n", message);
 			criptografa();
+			printf("mensagem criptografada minha: %s\n", message);
 			sendMessage(fdSocket2,message,100*sizeof(char)); //Envia mensagem
 
 		}
@@ -139,8 +141,8 @@ int main(int argc, char *argv[])
 		while(strcmp(message, "tchau")){
 					printf("Você: ");
 					gets(message);
-					sendMessage(fdSocket,message,100*sizeof(char)); //Envia mensagem
 					criptografa();
+					sendMessage(fdSocket,message,100*sizeof(char)); //Envia mensagem			
 					receiveMessage(fdSocket,message,100*sizeof(char)); //Recebe mensagem
 					descriptografa();
 					printf("Mensagem Recebida: %s\n", message);
