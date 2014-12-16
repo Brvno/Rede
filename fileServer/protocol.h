@@ -2,21 +2,24 @@
 #define PROTOCOL_H
 
 #include <bits/stdc++.h>
+#include "communication.h"
 
-using namespace std;
 
-class Protocol
-{
-private:
-    int tipo;       // Podendo ser de 3. Post, Ask e Send
-    string nome;    // Nome do arquivo
+#define PORT 50000
+
+
+struct protocol{
+    int tipo;       // Podendo ser de 3 tipos. Post, Ask e Send
+    char nome[128]; // Nome do arquivo
     int size;       // Tamanho do Arquivo
     char* arquivo;  // Dados do arquivo
     int checkSum;   // verificacao
-public:
-    Protocol();
-    char* byterizar();
-    int checkSum(char*);
 };
+
+struct File{
+    char* arquivo;
+    char nome[128];
+};
+
 
 #endif // PROTOCOL_H

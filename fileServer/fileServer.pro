@@ -1,15 +1,15 @@
 TEMPLATE = app
 CONFIG += console
+CONFIG -= app_bundle
 CONFIG -= qt
 
-
 SOURCES += main.cpp \
-    client.cpp \
-    file.cpp \
-    protocol.cpp
+    server.cpp \
+    client.cpp
 
 HEADERS += \
-    client.h \
-    file.h \
-    protocol.h
+    communication.h \
+    protocol.h \
+    server.h \
+    client.h
 

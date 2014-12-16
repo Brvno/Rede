@@ -2,16 +2,19 @@
 #define CLIENT_H
 
 #include <bits/stdc++.h>
-#include "file.h"
+#include "server.h"
 
-class Client
-{
-private:
-    std::string serverAddress;
+using namespace std;
 
-public:
-    Client();
-    void connectServer(std::string address);
-};
+//Variaveis Globais
+int socketClient;
+vector<File> cacheF;
+
+//Funcoes
+void client(char*);
+int checkFile(char*);
+char* protocolar(File, int);
+
+
 
 #endif // CLIENT_H
