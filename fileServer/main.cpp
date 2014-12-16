@@ -1,4 +1,4 @@
-#include "client.h"
+#include "funcoes.h"
 
 using namespace std;
 
@@ -10,6 +10,14 @@ int main()
 
     if(server){
         servidor();
+    }
+    else{
+        cout << "IP do servidor: ";
+        char *ip;
+        ip = (char*)malloc(sizeof(char)*20);
+        cin >> ip;
+        cout << ip << endl;
+        client(ip);
     }
 
     return 0;
