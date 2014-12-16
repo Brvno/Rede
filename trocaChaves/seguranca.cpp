@@ -1,203 +1,152 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
+#include "communication.h"
+#include<iostream>
+
+#define PORT  50000
+#define PORT2 50001
+int fdSocket, mainSocket,fdSocket2;
+using namespace std;
+char chave_ses,msg[100],minhachave,message[100];
+void criptografa()
+{
+    int i=0;
+    while(msg[i]!='\0')
+    {
+        message[i]=message[i]+chave_ses;
+        i++;
+    }
+}
+void descriptografa()
+{
+    int i=0;
+    while(msg[i]!='\0')
+    {
+        message[i]=message[i]-chave_ses;
+        i--;
+    }
+}
+struct chaves
+{
+  char nome;        //codigo do computador
+  int chave;
+
+};
+chaves banco[5];
 
 
-/*
-	Função que cria um socket e fica esperando para receber conexões
+// dois argumentos 2 ips
+int main(int argc, char *argv[])
+{
+	//inicializacao
+	banco[0].nome='A';
+	banco[0].chave='1';
+	banco[1].nome='B';
+	banco[1].chave='2';
+	char minhachavei,pc1,pc2; 
+    /// Iniciar conexao
+    int server;
+    socklen_t sockLen;
+    struct sockaddr_in socketAddr;
+    sockLen = sizeof(socketAddr);
+    cout << "Servidor? [0/1/2]" <<endl;
+    cin >> server;
+    if(server==0 || server==2){
+        mainSocket = openConnection(PORT, 0);
+        fdSocket = acceptConnection(mainSocket, sockLen);
 
-	port: porta onde o socket vai ser aberto;
-	socketType: 0 para bloqueante, 1 para não bloqueante;
-	return value: descritor do socket aberto;
-*/
-int openConnection(unsigned short port, int socketType){
+    }
+    else
+    {
+        fdSocket = tryConnection((char*)argv[1], PORT, 0);
+    }
+    //se for server
+    //recebe mensagem e envia a
+    //criptografia da mensagem A,a chave de sessão a,b criptografada e uma criptografia para o b com a chave de sessão
+    if(server==0)
+    {
+        char* msg;
+		 msg = (char*)malloc(3*sizeof(char));		
+        receiveMessage(fdSocket,msg,sizeof(char)*100);
+        cout<<"mensagem eh ="<<msg<<endl;
+        cout<<"recebeu a primeira"<<endl;
+        pc1=msg[0];
+        pc2=msg[1];
+        int chave1,chave2;
+        int chave3=3;
+        for(int i=0;i<5;i++) 
+        {
+            if(pc1 == banco[i].nome)
+                chave1=banco[i].chave;
+            if(pc2 == banco[i].nome)
+                chave2=banco[i].chave;
+        }
+        //chaveA,crip(A,B),chaveB,crip(a,b)
+        char chave_encp31=(char)(chave3+chave1);
+        char chave_encp32=(char)(chave3+chave2);
+        cout<<chave_encp31<<"  "<<chave_encp32;
+        msg[0]=chave_encp31;
+        msg[1]=chave_encp32;
+        sendMessage(fdSocket,msg,sizeof(char)*100);
+        cout<<"mensagem eh"<<msg<<endl;
+        closeConnection(fdSocket);
+    }
+    //se for pc 1
+    if(server==1)
+    {	
+    	minhachave=1;
+        char* msg;
+        msg = (char*)malloc(3*sizeof(char));		
+        msg[0]='A';
+        msg[1]='B';
+        msg[2] = '\0';
+        //envia mensagem pro servidor
+         cout<<"mensagem eh ="<<msg<<endl;
+        sendMessage(fdSocket, msg, sizeof(char)*100);
+        cout<<"enviou primeira"<<endl;
+        //recebe mensagem do servidor
+        receiveMessage(fdSocket,msg,sizeof(char)*100);
+         cout<<"mensagem eh ="<<msg<<endl;
+        cout<<"recebeu a criptografia"<<endl;
+        chave_ses=(int)msg[0];
+        chave_ses=chave_ses-minhachave;
+        cout<<"chave_ses="<<chave_ses<<endl;
+        msg[0]='A';
+        fdSocket2 = tryConnection((char*)argv[2], PORT2, 0); //segundo argumento é o segundo ip
+        sendMessage(fdSocket2,msg,sizeof(char)*100);
+		//comeca mensagens
+		while(strcmp(message, "tchau")){
+			receiveMessage(fdSocket2,message,100*sizeof(char)); //Recebe mensagem
+			descriptografa();
+			printf("Ele(a): %s\n", message);
+			if(!strcmp(message, "tchau"))
+				break;
+			printf("Você: ");
+			gets(message);
+			criptografa();
+			sendMessage(fdSocket2,message,100*sizeof(char)); //Envia mensagem
 
-	int fdSocket;
-	int nonBlock;
-	struct sockaddr_in socketAddr;
-	socklen_t sockLen;
-
-	//Create socket
-	if(socketType==0){ //Blocking
-		if((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-			perror("Unable to create socket\n");
-			printf("Exit %s:%d\n", __FILE__, __LINE__);
-			exit(1);
 		}
-	}
-	else{ //Non-Blocking
-		if((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-			perror("Unable to create socket\n");
-			printf("Exit %s:%d\n", __FILE__, __LINE__);
-			exit(1);
+
+    }
+
+    //se for pc 2
+    if(server==2)
+    {
+    	minhachave=2;
+        receiveMessage(fdSocket,msg,100*sizeof(char));
+        chave_ses=(int)msg[1];
+        chave_ses=chave_ses-minhachave;
+		//comeca mensagens
+		while(strcmp(message, "tchau")){
+					printf("Você: ");
+					gets(message);
+					sendMessage(fdSocket,message,100*sizeof(char)); //Envia mensagem
+					criptografa();
+					receiveMessage(fdSocket,message,100*sizeof(char)); //Recebe mensagem
+					descriptografa();
+					printf("Mensagem Recebida: %s\n", message);
 		}
-		nonBlock=fcntl(fdSocket,F_GETFL,0);
-		fcntl(fdSocket,F_SETFL,nonBlock | O_NONBLOCK);
-	}
-
-	//Setting socket parameters
-	memset(&socketAddr, 0, sizeof(socketAddr));
-	socketAddr.sin_family      = AF_INET;
-	socketAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	socketAddr.sin_port        = htons(port);
-    
-	sockLen = sizeof(socketAddr);
-
-	//Bind between socket and descriptor
-	if(bind(fdSocket, (struct sockaddr *)&socketAddr, sockLen) < 0){
-		perror("Unable to bind socket\n");
-		printf("Exit %s:%d\n", __FILE__, __LINE__);
-		exit(1);
-	}
-
-	//Waiting for connections. The second parameter is the size of the queue for waiting connections
-	if(listen(fdSocket, 100) < 0){
-		perror("Unable to listen\n");
-		printf("Exit %s:%d\n", __FILE__, __LINE__);
-		exit(1);
-	}
-
-	return fdSocket;
-
-}
-
-/*
-	Função que tenta se conectar a um socket
-
-	address: string com o endereço IP do host que vai receber a conexão 
-	port: porta onde o socket vai ser aberto;
-	socketType: 0 para bloqueante, 1 para não bloqueante;
-	return value: descritor do socket aberto;
-*/
-int tryConnection(char *address, unsigned short port, int socketType){
-
-	int fdSocket;
-	int nonBlock;
-	struct sockaddr_in socketAddr;
 	
-	//Create socket
-	if(socketType==0){ //Blocking
-		if((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-			perror("Unable to create socket\n");
-			printf("Exit %s:%d\n", __FILE__, __LINE__);
-			exit(1);
-		}
-	}
-	else{ //Non-Blocking
-		if((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-			perror("Unable to create socket\n");
-			printf("Exit %s:%d\n", __FILE__, __LINE__);
-			exit(1);
-		}
-		nonBlock=fcntl(fdSocket,F_GETFL,0);
-		fcntl(fdSocket,F_SETFL,nonBlock | O_NONBLOCK);
-	}
 
-	//Setting socket parameters
-	memset(&socketAddr, 0,sizeof(socketAddr));
-     	socketAddr.sin_family = AF_INET;	
-     	socketAddr.sin_port   = htons(port);
-     	inet_aton(address, &(socketAddr.sin_addr));	//Set the destination address
-     
-	//Connect to a socket
-    	if(connect(fdSocket, (struct sockaddr *) &socketAddr, sizeof(socketAddr)) < 0){
-		return -1;
-	}
-
-	return fdSocket;
+    }
 
 }
-
-/*
-	Função que aceita conexão em um socket já aberto
-
-	fdSocket: descritor do socket já aberto
-	sockLen: tamanho em bytes de uma estrutura de socket (ver código exemplo)
-	return value: descritor do socket que especifica a conexão que foi estabelecida
-
-*/
-int acceptConnection(int fdSocket, socklen_t sockLen){
-
-	int realSocket;
-	struct sockaddr_in socketAddr;
-
-	memset(&socketAddr, 0, sizeof(socketAddr));
-
-	//Accept connection on a socket
-	realSocket = accept(fdSocket, (struct sockaddr *)&socketAddr, &sockLen);
-
-	return realSocket;
-
-}
-
-/*
-	Função que fecha um socket aberto
-
-	fdSocket: socket a ser fechado
-
-*/
-void closeConnection(int fdSocket){
-
-	if((close(fdSocket)) < 0){
-		perror("Unable to close socket\n");
-		printf("Exit %s:%d\n", __FILE__, __LINE__);
-		exit(1);
-	}
-
-}
-
-/*
-	Função que envia uma mensagem para um socket
-
-	fdSocket: descritor do socket onde a mensagem vai ser enviada
-	data: dados a serem enviados
-	size: quantidade de bytes que serão enviados
-	return value: quantidade de bytes enviados
-
-*/
-int sendMessage(int fdSocket, const char *data, size_t size){
-
-	int ret;
-	
-	ret=send(fdSocket, data, size, 0);
-	
-	if(ret < 0){
-		perror("Unable to send message\n");
-	}
-
-	return ret;
-
-}
-
-/*
-	Função que recebe uma mensagem em um socket
-
-	fdSocket: descritor do socket que vai receber a mensagem
-	data: local onde os dados recebidos serão armazenados
-	size: quantidade de bytes que serão recebidos
-	return value: quantidade de bytes recebidos
-
-*/
-int receiveMessage(int fdSocket, const char *data, size_t size){
-
-	int ret;
-	
-	ret=recv(fdSocket, (void *)data, size, 0);
-
-	if(ret < 0){
-		perror("Unable to receive message\n");
-	}
-
-	return ret;
-
-}
-
