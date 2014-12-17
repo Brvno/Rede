@@ -61,15 +61,15 @@ void client(char* IP){
 
             for(int i = 0; file.get(gh[0]); i++)
                 sendMessage(fdSocket,gh, sizeof(char));
-//            gh[0] = EOF;
-//            sendMessage(fdSocket,gh, sizeof(char));
+            gh[0] = EOF;
+            sendMessage(fdSocket,gh, sizeof(char));
 
             file.close();
             cout << "Enviado para Server" << endl;
         }
         else if(x == 1){
             cout << "Qual arquivo?" << endl;
-            char* nome;
+            char nome[128];
             cin >> nome;
             protocol *prot = (protocol*)malloc(sizeof(protocol));
             strcpy(prot->nome,nome);
@@ -102,16 +102,17 @@ void* threadServidor(void* socket){
     //vector<File> arquivosCache;
 
     cout << "CONECTADO O SOCKET " << fdSocket << endl;
-    while(true){
+  //  while(true){
         cout << "Esperando Mensagem" << endl;
         receiveMessage(fdSocket,message,sizeof(protocol));
         requisit = (protocol*)message;
-        cout << "Mensagem Recebida: " << requisit->nome << endl;
+        cout << "Mensagem Recebida" << endl;
         //Verificar msg
         if(requisit->tipo > 3)
             cout << "Mensagem em formato errado" << endl;
         //Upload
         else if(requisit->tipo == 2) {
+            cout << " Upload " << requisit->nome << endl;
             fstream file;
             file.open(requisit->nome, ios_base::out);
             while(1){
@@ -122,21 +123,22 @@ void* threadServidor(void* socket){
                     break;
             }
             file.close();
-
         }
         //Download
         else if(requisit->tipo == 1) {
+            cout << " Download " << requisit->nome << endl;
             fstream file;
 
             file.open(requisit->nome, ios_base::in);
             File aux;
             char gh[1];
-
             for(int i = 0; file.get(gh[0]); i++)
                 sendMessage(fdSocket,gh, sizeof(char));
+            gh[0] = EOF;
+            sendMessage(fdSocket,gh, sizeof(char));
 
         }
-    }
+   //}
 }
 
 
@@ -154,10 +156,10 @@ void servidor(){
 
     for(int i = 0; i < num; i++){
         sockets[i] = acceptConnection(mainSocket, sockLen);
-        //threadServidor((void*)sockets[i]);
-        pthread_create(&thServer[i], NULL, &threadServidor, (void*)sockets[i]);
+        threadServidor((void*)sockets[i]);
+//        pthread_create(&thServer[i], NULL, &threadServidor, (void*)sockets[i]);
     }
-    for(int i = 0; i < num; i++)
-        pthread_join(thServer[i], NULL);
+//    for(int i = 0; i < num; i++)
+//        pthread_join(thServer[i], NULL);
 
 }

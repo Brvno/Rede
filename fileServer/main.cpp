@@ -16,7 +16,6 @@ int main()
         char *ip;
         ip = (char*)malloc(sizeof(char)*20);
         cin >> ip;
-        cout << ip << endl;
         client(ip);
     }
 
