@@ -71,10 +71,12 @@ void client(char* IP){
             cout << "Qual arquivo?" << endl;
             char nome[128];
             cin >> nome;
-            protocol *prot = (protocol*)malloc(sizeof(protocol));
-            strcpy(prot->nome,nome);
-            prot->tipo = x;
-            sendMessage(fdSocket,(char*)prot, sizeof(protocol));
+
+            protocol* prt = (protocol*)malloc(sizeof(protocol));
+            strcpy(prt->nome, nome);
+            prt->tipo = 1;
+
+            sendMessage(fdSocket,(char*)prt, sizeof(protocol));
 
             fstream file;
             file.open(nome, ios_base::out);
@@ -106,7 +108,7 @@ void* threadServidor(void* socket){
         cout << "Esperando Mensagem" << endl;
         receiveMessage(fdSocket,message,sizeof(protocol));
         requisit = (protocol*)message;
-        cout << "Mensagem Recebida" << endl;
+        cout << "Mensagem Recebida " << requisit->nome << endl;
         //Verificar msg
         if(requisit->tipo > 3)
             cout << "Mensagem em formato errado" << endl;
