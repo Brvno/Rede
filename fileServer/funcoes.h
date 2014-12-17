@@ -29,7 +29,6 @@ void servidor();                                                                
 /// ---------------------- CLIENT ------------------------------------- ////
 
 void client(char* IP){
-    cout << IP << endl;
     int fdSocket = tryConnection(IP, PORT, 0);
 //    File aux;
 //    strcpy(aux.nome, "teste");
@@ -104,14 +103,12 @@ void* threadServidor(void* socket){
     //vector<File> arquivosCache;
 
     cout << "CONECTADO O SOCKET " << fdSocket << endl;
-  //  while(true){
+    while(true){
         cout << "Esperando Mensagem" << endl;
         receiveMessage(fdSocket,message,sizeof(protocol));
         requisit = (protocol*)message;
         cout << "Mensagem Recebida " << requisit->nome << endl;
-        //Verificar msg
-        if(requisit->tipo > 3)
-            cout << "Mensagem em formato errado" << endl;
+
         //Upload
         else if(requisit->tipo == 2) {
             cout << " Upload " << requisit->nome << endl;
@@ -140,7 +137,7 @@ void* threadServidor(void* socket){
             sendMessage(fdSocket,gh, sizeof(char));
 
         }
-   //}
+   }
 }
 
 
