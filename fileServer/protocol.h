@@ -11,11 +11,10 @@ using namespace std;
 
 
 struct protocol{
-    int tipo;       // Podendo ser de 3 tipos. Post, Ask e Send
+    int tipo;       // Podendo ser de 2 tipos. Download, Upload
     char nome[128]; // Nome do arquivo
     int size;       // Tamanho do Arquivo
-    char* arquivo;  // Dados do arquivo
-    int checkSum;   // verificacao
+    char *arquivo;  // Dados do arquivo
 };
 
 struct File{
@@ -25,18 +24,20 @@ struct File{
 
 //Cria Mensagem de acordo com o protocolo
 char* protocolar(File file, int tipo){
-    protocol *prot;
-    *prot->nome = *file.nome;
-    prot->size = sizeof(file.arquivo);
+    protocol* prot = (protocol*)malloc(sizeof(protocol));
+
+    strcpy(prot->nome, file.nome);
     prot->tipo = tipo;
+    prot->size = sizeof(file.arquivo)/sizeof(char);
 
     return (char*)prot;
 }
 
 ///Verificar a existencia do arquivo
 int checkFile(char* nome, vector<File> cacheF){
+
     for(unsigned int i = 0; i < cacheF.size(); i++)
-        if(cacheF[i].nome == nome){
+        if(strcmp(cacheF[i].nome, nome) == 0){
             cout << nome << " encontrado na cache" << endl;
             return i;
         }
@@ -47,7 +48,7 @@ int checkFile(char* nome, vector<File> cacheF){
 
     // Arquivo nao existente
     cout << nome <<  " nao existe" << endl;
-    return false;
+    return -1;
 }
 
 #endif // PROTOCOL_H
